@@ -1,7 +1,10 @@
 package com.campusconnect.fragment.Home;
 
+import android.app.AlarmManager;
+import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
@@ -9,6 +12,7 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.SystemClock;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.widget.SwipeRefreshLayout;
@@ -23,7 +27,6 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
-
 import com.campusconnect.CoursePageActivity;
 import com.campusconnect.POJO.AvailableCourseList;
 import com.campusconnect.POJO.ModelFeed;
@@ -32,12 +35,21 @@ import com.campusconnect.POJO.SubscribedCourseList;
 import com.campusconnect.R;
 import com.campusconnect.adapter.CourseListAdapter;
 import com.campusconnect.adapter.TimetableAdapter;
+import com.google.common.base.Joiner;
 import com.google.firebase.analytics.FirebaseAnalytics;
 import com.google.firebase.messaging.FirebaseMessaging;
 
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
+import java.util.Objects;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -59,6 +71,7 @@ public class FragmentCourses extends Fragment{
     SwipeRefreshLayout swipeRefreshLayout;
     LinearLayout cell_container;
     View course_indicator;
+
     Retrofit retrofit = new Retrofit.
             Builder()
             .baseUrl(BASE_URL)
@@ -71,7 +84,9 @@ public class FragmentCourses extends Fragment{
     NetworkInfo activeNetwork;
     private FirebaseAnalytics mFirebaseAnalytics;
     boolean isConnected;
-    public static final String BASE_URL = "https://uploadnotes-2016.appspot.com/_ah/api/notesapi/v1/";
+    //testing url:https://uploadingtest-2016.appspot.com
+    // production url:https://uploadnotes-2016.appspot.com
+    public static final String BASE_URL = "https://uploadingtest-2016.appspot.com/_ah/api/notesapi/v1/";
     public static final String uploadURL = "https://uploadnotes-2016.appspot.com/img";
     public static final String django = "https://campusconnect-2016.herokuapp.com";
     //public static final String django = "http://10.75.133.109:8000";
@@ -211,6 +226,14 @@ public class FragmentCourses extends Fragment{
                 }
             }
 
+            /**Setting alarm with time being set to first hour the class starts*/
+            final List<String> st_timeDay1 = new ArrayList<String>();
+            final List<String> st_timeDay2 = new ArrayList<String>();
+            final List<String> st_timeDay3 = new ArrayList<String>();
+            final List<String> st_timeDay4 = new ArrayList<String>();
+            final List<String> st_timeDay5 = new ArrayList<String>();
+            final List<String> st_timeDay6 = new ArrayList<String>();
+
         call= myApi.getFeed(getActivity().getSharedPreferences("CC", Context.MODE_PRIVATE).getString("profileId",""));
         call.enqueue(new Callback<ModelFeed>() {
             @Override
@@ -246,11 +269,69 @@ public class FragmentCourses extends Fragment{
                         courseIds.add(x.getCourseId());
                         mCourseAdapter.add(x);
                         x.save();
+
                         int i = x.getDate().size()-1;
                         while(i>=0) {
+                            if (x.getDate().get(i).equals("1")) {
+                                st_timeDay1.add(x.getStartTime().get(i));
+                                Collections.sort(st_timeDay1);
+                                SharedPreferences sp = getActivity().getSharedPreferences("CC",Context.MODE_PRIVATE);
+                                sp.edit()
+                                        .putString("alarmMon",st_timeDay1.get(0))
+                                        .apply();
+                                // Log.d("atul ", courseList.getStartTime().get(j) + "day:" + courseList.getDate().get(j) + "course: " + courseList.getCourseName());
+                            }
+
+                            else if (x.getDate().get(i).equals("2")){
+                                st_timeDay2.add(x.getStartTime().get(i));
+                                Collections.sort(st_timeDay2);
+                                SharedPreferences sp = getActivity().getSharedPreferences("CC",Context.MODE_PRIVATE);
+                                sp.edit()
+                                        .putString("alarmTue",st_timeDay2.get(0))
+                                        .apply();
+                            }
+
+                            else if (x.getDate().get(i).equals("3")){
+                                st_timeDay3.add(x.getStartTime().get(i));
+                                Collections.sort(st_timeDay3);
+                                SharedPreferences sp = getActivity().getSharedPreferences("CC",Context.MODE_PRIVATE);
+                                sp.edit()
+                                        .putString("alarmWed",st_timeDay3.get(0))
+                                        .apply();
+                            }
+
+                            else if (x.getDate().get(i).equals("4")){
+                                st_timeDay4.add(x.getStartTime().get(i));
+                                Collections.sort(st_timeDay4);
+                                SharedPreferences sp = getActivity().getSharedPreferences("CC",Context.MODE_PRIVATE);
+                                sp.edit()
+                                        .putString("alarmThu",st_timeDay4.get(0))
+                                        .apply();
+                            }
+
+                            else if (x.getDate().get(i).equals("5")){
+                                st_timeDay5.add(x.getStartTime().get(i));
+                                Collections.sort(st_timeDay5);
+                                SharedPreferences sp = getActivity().getSharedPreferences("CC",Context.MODE_PRIVATE);
+                                sp.edit()
+                                        .putString("alarmFri",st_timeDay5.get(0))
+                                        .apply();
+                            }
+
+                            else if (x.getDate().get(i).equals("6")){
+                                st_timeDay6.add(x.getStartTime().get(i));
+                                Collections.sort(st_timeDay6);
+                                SharedPreferences sp = getActivity().getSharedPreferences("CC",Context.MODE_PRIVATE);
+                                sp.edit()
+                                        .putString("alarmSat",st_timeDay6.get(0))
+                                        .apply();
+                            }
+
                             int start = Integer.parseInt(x.getStartTime().get(i).substring(0, 2));
                             int end = Integer.parseInt(x.getEndTime().get(i).substring(0, 2));
                             String date = x.getDate().get(i);
+
+                                //  Log.d("atul", day);
                             for (int ii = start; ii < end; ii++) {
                                 View cell = LayoutInflater.from(getContext()).inflate(R.layout.timetable_cell_layout, cell_container, false);
                                 if (cell != null){
@@ -284,13 +365,34 @@ public class FragmentCourses extends Fragment{
                             i--;
                         }
                         FirebaseMessaging.getInstance().subscribeToTopic(x.getCourseId());
-                    }
-                    Log.i("sw32",""+subscribedCourseList.size() + " : " + subscribedCourseList.isEmpty());
 
+
+                    }
+
+                    Log.i("sw32", "" + subscribedCourseList.size() + " : " + subscribedCourseList.isEmpty());
                     swipeRefreshLayout.setRefreshing(false);
+
+                    //set alarm day1
+                    setAlarm(Calendar.MONDAY,st_timeDay1,1);
+                    //set alarm day2
+                    setAlarm(Calendar.TUESDAY,st_timeDay2,2);
+                    //set alarm day3
+                    setAlarm(Calendar.WEDNESDAY,st_timeDay3,3);
+                    //set alarm day4
+                    setAlarm(Calendar.THURSDAY,st_timeDay4,4);
+                    //set alarm day5
+                    setAlarm(Calendar.FRIDAY,st_timeDay5,5);
+                    //set alarm day6
+                    setAlarm(Calendar.SATURDAY,st_timeDay6,6);
+
                 }
 
-            }
+
+
+                }
+
+
+
             @Override
             public void onFailure(Call<ModelFeed> call, Throwable t) {
                 Toast.makeText(getActivity(),"Oops! Something went wrong!",Toast.LENGTH_SHORT).show();
@@ -304,4 +406,73 @@ public class FragmentCourses extends Fragment{
             swipeRefreshLayout.setRefreshing(false);
         }
     }
+
+
+
+
+     private void setAlarm(int dayOfTheWeek,List<String> st_time,int UNIQUE_ID){
+
+
+         Intent intent = new Intent("com.campusconnect.AlertDialogActivity");
+         PendingIntent operation = PendingIntent.getActivity(getActivity().getBaseContext(), UNIQUE_ID, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+         AlarmManager alarmManager = (AlarmManager) getActivity().getBaseContext().getApplicationContext().getSystemService(Context.ALARM_SERVICE);
+
+         String startTime = st_time.get(0);
+
+            String pattern = "HH:mm";
+            SimpleDateFormat sdf = new SimpleDateFormat(pattern,Locale.getDefault());
+             Calendar alarmCalender = Calendar.getInstance();
+
+         try {
+             Date date = sdf.parse(startTime);
+                int hours = date.getHours();
+                int mins = date.getMinutes();
+              //      hours = hours - 60*60*1000;
+            // Log.d("atul",String.valueOf(hours));
+
+             alarmCalender.setTimeInMillis(System.currentTimeMillis());
+             alarmCalender.set(Calendar.DAY_OF_WEEK, dayOfTheWeek);
+             alarmCalender.set(Calendar.HOUR_OF_DAY, hours);
+             alarmCalender.set(Calendar.MINUTE, mins);
+             alarmCalender.set(Calendar.SECOND,0);
+
+             long alarm_time = alarmCalender.getTimeInMillis();
+                        //   Log.d("atul", "millis" + alarm_time);
+             long timeToAlarm = alarmCalender.getTimeInMillis();
+             if (alarmCalender.getTimeInMillis() < System.currentTimeMillis())
+             {
+                 timeToAlarm += (24*7*60*60*1000);
+             }
+
+             alarmManager.setRepeating(AlarmManager.RTC_WAKEUP,timeToAlarm,24 * 7 * 60 * 60 * 1000,operation);
+
+
+
+
+
+            Log.d("atul","alarm set at" + getDate(alarm_time,"HH:mm"));
+
+
+
+       } catch (ParseException e) {
+             e.printStackTrace();
+         }
+     }
+
+
+    public static String getDate(long milliSeconds, String dateFormat)
+    {
+        // Create a DateFormatter object for displaying date in specified format.
+        SimpleDateFormat formatter = new SimpleDateFormat(dateFormat,Locale.getDefault());
+
+        // Create a calendar object that will convert the date and time value in milliseconds to date.
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTimeInMillis(milliSeconds);
+        return formatter.format(calendar.getTime());
+    }
+
 }
+
+
+
+

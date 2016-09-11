@@ -89,11 +89,13 @@
             android:label="@string/app_name"
             android:launchMode="singleTask"
             android:screenOrientation="portrait">
+
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+
             <intent-filter>
                 <data
                     android:host="campusconnectreboot.app.link"
@@ -189,6 +191,32 @@
             android:name="com.campusconnect.IntroActivity"
             android:screenOrientation="portrait" />
         <activity android:name="com.campusconnect.NetworkNotFoundActivity" />
+
+<activity android:name="com.campusconnect.AlertDialogActivity"
+    android:theme="@style/Theme.AppCompat.Translucent" >
+        <intent-filter>
+            <action android:name="com.campusconnect.AlertDialogActivity"/>
+            <category android:name="android.intent.category.DEFAULT" />
+        </intent-filter>
+<!--
+    <intent-filter>
+        <action android:name="android.intent.action.MAIN" />
+        <category android:name="android.intent.category.LAUNCHER" />
+    </intent-filter>
+    -->
+   </activity>
+
+        <!--
+<activity android:name=".AlarmActivity">
+
+    <intent-filter>
+        <action android:name="android.intent.action.MAIN" />
+        <category android:name="android.intent.category.LAUNCHER" />
+    </intent-filter>
+
+</activity>
+-->
+        <activity android:name=".AlarmAlert"/>
     </application>
 
 </manifest>

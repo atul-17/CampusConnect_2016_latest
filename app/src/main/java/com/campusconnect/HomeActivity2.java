@@ -833,4 +833,5 @@ public class HomeActivity2 extends AppCompatActivity implements FloatingActionsM
         super.onPause();
         MyApp.activityPaused();
     }
+
 }

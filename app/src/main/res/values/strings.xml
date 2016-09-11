@@ -53,4 +53,12 @@
     <string name="server_client_id">722474693619-qbigsh12fg6a7m14ca50d7m9v1la6iq4.apps.googleusercontent.com</string>
     <string name="title_activity_edit_course">EditCourseActivity</string>
 
+
+    <string name="title_activity_main">Alarm Setting Screen</string>
+    <string name="title_activity_demo">Demo Activity Screen</string>
+    <string name="str_btn_set_alarm">Set Alarm</string>
+    <string name="str_btn_quit">Quit</string>
+    <string name="str_tv_message">Opened by Alarm</string>
+
+
 </resources>

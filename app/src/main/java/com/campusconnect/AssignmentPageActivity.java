@@ -35,6 +35,7 @@ import com.campusconnect.fragment.Drawer.FragmentInvite;
 import com.campusconnect.fragment.Drawer.FragmentRate;
 import com.campusconnect.fragment.Drawer.FragmentTerms;
 import com.campusconnect.fragment.Home.FragmentCourses;
+import com.github.curioustechizen.ago.RelativeTimeTextView;
 import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.common.ConnectionResult;
@@ -50,6 +51,8 @@ import org.json.JSONException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Date;
+import java.util.Locale;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
@@ -87,7 +90,7 @@ public class AssignmentPageActivity extends AppCompatActivity implements View.On
     @Bind(R.id.tv_uploader)
     TextView uploader;
     @Bind(R.id.tv_date_posted)
-    TextView date_posted;
+    RelativeTimeTextView date_posted;
     @Bind(R.id.tv_description)
     TextView description;
     @Bind(R.id.tv_views_count)
@@ -217,6 +220,7 @@ public class AssignmentPageActivity extends AppCompatActivity implements View.On
                 .addConverterFactory(GsonConverterFactory.create())
                 .build();
         MyApi myApi = retrofit.create(MyApi.class);
+        Log.d("atul","assignment"+assignmentId);
         MyApi.getAssignmentRequest body = new MyApi.getAssignmentRequest(assignmentId, getSharedPreferences("CC", Context.MODE_PRIVATE).getString("profileId", ""));
         Call<ModelAssignment> call = myApi.getAssignment(body);
         call.enqueue(new Callback<ModelAssignment>() {
@@ -228,9 +232,20 @@ public class AssignmentPageActivity extends AppCompatActivity implements View.On
                 dueDate.setText(assignment.getDueDate());
                 views.setText(assignment.getViews());
                 description.setText(assignment.getAssignmentDesc());
-                String time = assignment.getLastUpdated();
-                SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
+
+                try{
+                    String time = assignment.getLastUpdated();
+                    SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS", Locale.getDefault());
+                    Date lastUpdated = df.parse(time);
+                    Log.d("atul","lastUpd"+lastUpdated);
+                    Log.d("atul:",time);
+                    date_posted.setReferenceTime(lastUpdated.getTime());
+                }catch (Exception ex){
+                    ex.printStackTrace();
+                }
+                /*
                 int days = 0, hours = 0, minutes = 0, seconds = 0;
+
                 try {
                     Calendar a = Calendar.getInstance();
                     Calendar b = Calendar.getInstance();
@@ -263,7 +278,7 @@ public class AssignmentPageActivity extends AppCompatActivity implements View.On
                 } else {
                     if (days == 1) date_posted.setText(days + " day ago");
                     else date_posted.setText(days + " days ago");
-                }
+                }*/
             }
 
 

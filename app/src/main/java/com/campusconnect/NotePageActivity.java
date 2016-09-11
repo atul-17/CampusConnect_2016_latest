@@ -14,11 +14,14 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.Fragment;
+import android.support.v4.util.TimeUtils;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.text.format.DateUtils;
+import android.text.method.DateTimeKeyListener;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.MotionEvent;
@@ -49,6 +52,7 @@ import com.campusconnect.fragment.Drawer.FragmentInvite;
 import com.campusconnect.fragment.Drawer.FragmentRate;
 import com.campusconnect.fragment.Drawer.FragmentTerms;
 import com.campusconnect.fragment.Home.FragmentCourses;
+import com.github.curioustechizen.ago.RelativeTimeTextView;
 import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.common.ConnectionResult;
@@ -72,7 +76,10 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
+import java.util.TimeZone;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
@@ -117,7 +124,7 @@ public class NotePageActivity extends AppCompatActivity implements View.OnClickL
     @Bind(R.id.tv_uploader)
     TextView uploader;
     @Bind(R.id.tv_last_updated)
-    TextView lastPosted;
+    RelativeTimeTextView lastPosted;
 
     @Bind(R.id.ib_back)
     ImageButton back_button;
@@ -295,12 +302,15 @@ public class NotePageActivity extends AppCompatActivity implements View.OnClickL
         else
         {
             noteBookId = getIntent().getStringExtra("noteBookId");
+
         }
         retrofit = new Retrofit.
                 Builder()
                 .baseUrl(MyApi.BASE_URL)
                 .addConverterFactory(GsonConverterFactory.create())
                 .build();
+        noteBookId = getIntent().getStringExtra("noteBookId");
+
         MyApi myApi = retrofit.create(MyApi.class);
         MyApi.getNoteBookRequest request = new MyApi.getNoteBookRequest(noteBookId, getSharedPreferences("CC", Context.MODE_PRIVATE).getString("profileId", ""));
         Call<ModelNoteBook> call = myApi.getNoteBook(request);
@@ -308,90 +318,102 @@ public class NotePageActivity extends AppCompatActivity implements View.OnClickL
             @Override
             public void onResponse(Call<ModelNoteBook> call, Response<ModelNoteBook> response) {
                 ModelNoteBook noteBook = response.body();
-                if(noteBook.getIsAuthor().equals("0"))
-                {
-                    sharetext = "Hey, check out the notes for "+ noteBook.getCourseName()+ " by "+noteBook.getUploaderName()+" on Campus Connect!\n";
-                }
-                else
-                {
-                    rate_note_button.setEnabled(false);
-                    sharetext = "Hey, check out my notes for "+ noteBook.getCourseName()+ " on Campus Connect!\n";
-                }
-                prevRate = Integer.parseInt(noteBook.getRated());
-                if (noteBook.getBookmarkStatus().equals("0")) {
-                    bookmark_note_button.setChecked(false);
-                } else {
-                    bookmark_note_button.setChecked(true);
-                }
-                noteList = noteBook.getNotes();
-                jsonNoteList = new JSONObject();
-                for (Note a : noteList) {
+                if (noteBook != null) {
+                    Log.d("atul", noteBook.getResponse() + ":");
+
+                    if (noteBook.getIsAuthor().equals("0")) {
+                        sharetext = "Hey, check out the notes for " + noteBook.getCourseName() + " by " + noteBook.getUploaderName() + " on Campus Connect!\n";
+                    } else {
+                        rate_note_button.setEnabled(false);
+                        sharetext = "Hey, check out my notes for " + noteBook.getCourseName() + " on Campus Connect!\n";
+                    }
+                    prevRate = Integer.parseInt(noteBook.getRated());
+                    if (noteBook.getBookmarkStatus().equals("0")) {
+                        bookmark_note_button.setChecked(false);
+                    } else {
+                        bookmark_note_button.setChecked(true);
+                    }
+                    noteList = noteBook.getNotes();
+                    jsonNoteList = new JSONObject();
+                    for (Note a : noteList) {
+                        try {
+                            jsonNoteList.put(a.getClassNumber(), a);
+                            Log.i("sw32page", a.getClassNumber());
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                    }
+
+
+                    List<String> urls = noteList.get(noteList.size() - 1).getUrlList();
+                    for (Note temp : noteList) {
+                        descriptions.add(temp.getDescription());
+                        dates.add(temp.getDate());
+                    }
+
+                    String last = urls.get(urls.size() - 1);
+                    Picasso.with(NotePageActivity.this)
+                            .load(last)
+                            .fit()
+                            .memoryPolicy(MemoryPolicy.NO_CACHE, MemoryPolicy.NO_STORE)
+                            .placeholder(R.drawable.default_portrait)
+                            .into(notes_last_page);
+                    courseName.setText(noteBook.getCourseName());
+                    views.setText(noteBook.getViews());
+                    rating.setText(noteBook.getTotalRating());
+                    pages.setText(noteBook.getPages());
+                    uploader.setText(noteBook.getUploaderName());
+
+                        try{
+                            String time = noteBook.getLastUpdated();
+                            SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS", Locale.getDefault());
+                            Date lastUpdated = df.parse(time);
+                            Log.d("atul","lastUpd"+lastUpdated);
+
+                            Log.d("atul:",time);
+                           lastPosted.setReferenceTime(lastUpdated.getTime());
+                        }catch (Exception ex){
+                            ex.printStackTrace();
+                        }
+
+                        /*
+                    int days = 0, hours = 0, minutes = 0, seconds = 0;
                     try {
-                        jsonNoteList.put(a.getClassNumber(), a);
-                        Log.i("sw32page", a.getClassNumber());
-                    } catch (JSONException e) {
+                        Calendar a = Calendar.getInstance();
+                        Calendar b = Calendar.getInstance();
+                        b.setTime(df.parse(time));
+                        long difference = a.getTimeInMillis() - b.getTimeInMillis();
+                        days = (int) (difference / (1000 * 60 * 60 * 24));
+                        hours = (int) (difference / (1000 * 60 * 60));
+                        minutes = (int) (difference / (1000 * 60));
+                        seconds = (int) (difference / 1000);
+                    } catch (ParseException e) {
                         e.printStackTrace();
                     }
-                }
-
-
-                List<String> urls = noteList.get(noteList.size() - 1).getUrlList();
-                for (Note temp : noteList) {
-                    descriptions.add(temp.getDescription());
-                    dates.add(temp.getDate());
-                }
-
-                String last = urls.get(urls.size() - 1);
-                Picasso.with(NotePageActivity.this)
-                        .load(last)
-                        .fit()
-                        .memoryPolicy(MemoryPolicy.NO_CACHE, MemoryPolicy.NO_STORE)
-                        .placeholder(R.drawable.default_portrait)
-                        .into(notes_last_page);
-                courseName.setText(noteBook.getCourseName());
-                views.setText(noteBook.getViews());
-                rating.setText(noteBook.getTotalRating());
-                pages.setText(noteBook.getPages());
-                uploader.setText(noteBook.getUploaderName());
-
-                String time = noteBook.getLastUpdated();
-                SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
-                int days = 0, hours = 0, minutes = 0, seconds = 0;
-                try {
-                    Calendar a = Calendar.getInstance();
-                    Calendar b = Calendar.getInstance();
-                    b.setTime(df.parse(time));
-                    long difference = a.getTimeInMillis() - b.getTimeInMillis();
-                    days = (int) (difference / (1000 * 60 * 60 * 24));
-                    hours = (int) (difference / (1000 * 60 * 60));
-                    minutes = (int) (difference / (1000 * 60));
-                    seconds = (int) (difference / 1000);
-                } catch (ParseException e) {
-                    e.printStackTrace();
-                }
-                if (days == 0) {
-                    if (hours == 0) {
-                        if (minutes == 0) {
-                            if (seconds == 0) {
-                                lastPosted.setText("Just now");
+                    if (days == 0) {
+                        if (hours == 0) {
+                            if (minutes == 0) {
+                                if (seconds == 0) {
+                                    lastPosted.setText("Just now");
+                                } else {
+                                    if (seconds == 1) lastPosted.setText(seconds + " second ago");
+                                    else lastPosted.setText(seconds + " seconds ago");
+                                }
                             } else {
-                                if (seconds == 1) lastPosted.setText(seconds + " second ago");
-                                else lastPosted.setText(seconds + " seconds ago");
+                                if (minutes == 1) lastPosted.setText(minutes + " minute ago");
+                                lastPosted.setText(minutes + " minutes ago");
                             }
                         } else {
-                            if (minutes == 1) lastPosted.setText(minutes + " minute ago");
-                            lastPosted.setText(minutes + " minutes ago");
+                            if (hours == 1) lastPosted.setText(hours + " hour ago");
+                            else lastPosted.setText(hours + " hours ago");
                         }
                     } else {
-                        if (hours == 1) lastPosted.setText(hours + " hour ago");
-                        else lastPosted.setText(hours + " hours ago");
-                    }
-                } else {
-                    if (days == 1) lastPosted.setText(days + " day ago");
-                    else lastPosted.setText(days + " days ago");
+                        if (days == 1) lastPosted.setText(days + " day ago");
+                        else lastPosted.setText(days + " days ago");
+                    }*/
+
                 }
             }
-
             @Override
             public void onFailure(Call<ModelNoteBook> call, Throwable t) {
             }

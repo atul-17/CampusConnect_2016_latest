@@ -16,6 +16,7 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.text.format.DateUtils;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
@@ -36,6 +37,7 @@ import com.campusconnect.fragment.Drawer.FragmentInvite;
 import com.campusconnect.fragment.Drawer.FragmentRate;
 import com.campusconnect.fragment.Drawer.FragmentTerms;
 import com.campusconnect.fragment.Home.FragmentCourses;
+import com.github.curioustechizen.ago.RelativeTimeTextView;
 import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.common.ConnectionResult;
@@ -51,6 +53,7 @@ import org.json.JSONException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Date;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
@@ -86,7 +89,7 @@ public class ExamPageActivity extends AppCompatActivity implements View.OnClickL
     @Bind(R.id.tv_exam_name)
     TextView testName;
     @Bind(R.id.tv_date_posted)
-    TextView date;
+    RelativeTimeTextView date;
     @Bind(R.id.tv_uploader)
     TextView uploader;
     @Bind(R.id.tv_description)
@@ -529,8 +532,20 @@ public class ExamPageActivity extends AppCompatActivity implements View.OnClickL
                 uploader.setText(modelTest.getUploaderName());
                 due.setText(modelTest.getDueDate());
                 views.setText(modelTest.getViews());
-                String time = modelTest.getLastUpdated();
-                SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
+
+
+                try {
+                    String time = modelTest.getLastUpdated();
+                    SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
+                    Date lastUpdated  = df.parse(time);
+                    Log.d("atul","lastUpd"+lastUpdated);
+                    Log.d("atul:",time);
+                    date.setReferenceTime(lastUpdated.getTime());
+                } catch (ParseException e) {
+                    e.printStackTrace();
+                }
+
+                /*
                 int days = 0, hours = 0, minutes = 0, seconds = 0;
                 try {
                     Calendar a = Calendar.getInstance();
@@ -564,7 +579,7 @@ public class ExamPageActivity extends AppCompatActivity implements View.OnClickL
                 } else {
                     if (days == 1) date.setText(days + " day ago");
                     else date.setText(days + " days ago");
-                }
+                }*/
             }
 
             @Override

@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent" >
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+<TextView
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:text="Wake Up!!!!"
+    android:textSize="30dp"
+    android:layout_alignParentTop="true"
+    android:layout_centerHorizontal="true"
+    android:id="@+id/tv_wake_up" />
+   <TextView
+       android:layout_width="wrap_content"
+       android:layout_height="wrap_content"
+       android:text="Course"
+       android:id="@+id/tv_course_scheduled"
+       android:layout_below="@+id/tv_wake_up"
+       android:layout_centerHorizontal="true"
+       android:layout_marginTop="23dp" />
+
+        <android.support.v7.widget.RecyclerView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:id="@+id/alarmCardList"
+            android:foregroundGravity="center_horizontal"
+
+            android:layout_marginTop="35dp"
+            android:layout_below="@+id/tv_todays_schedule"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true">
+        </android.support.v7.widget.RecyclerView>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Today&apos;s Schedule"
+            android:id="@+id/tv_todays_schedule"
+            android:layout_marginTop="35dp"
+            android:layout_below="@+id/tv_course_scheduled"
+            android:layout_centerHorizontal="true" />
+    </RelativeLayout>
+
+
+</RelativeLayout>

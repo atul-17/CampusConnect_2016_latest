@@ -12,8 +12,9 @@ import retrofit2.http.Query;
  * Created by sarthak on 6/14/16.
  */
 public interface MyApi {
-
-    String BASE_URL = "https://uploadnotes-2016.appspot.com/_ah/api/notesapi/v1/";
+    //testing url:https://uploadingtest-2016.appspot.com
+    // producation url:https://uploadnotes-2016.appspot.com
+    String BASE_URL = "https://uploadingtest-2016.appspot.com/_ah/api/notesapi/v1/";
 
     @GET("feed/ahJzfnVwbG9hZG5vdGVzLTIwMTZyFAsSB1Byb2ZpbGUYgICAgLyhggoM/")
     Call<ModelFeed> getFeed(@Query("profileId") String profileId);
@@ -23,7 +24,7 @@ public interface MyApi {
 
     @GET("getNot/ahJzfnVwbG9hZG5vdGVzLTIwMTZyFAsSB0NvbGxlZ2UYgICAgKKqkQoM")
     Call<ModelNotificationList> getNotifications(@Query("profileId") String profileId);
-    @POST("collegeDetails")
+    @POST("collegeRequest")
     Call<Void> addCollege(@Body addCollegeRequest body);
     class addCollegeRequest {
         private String name;

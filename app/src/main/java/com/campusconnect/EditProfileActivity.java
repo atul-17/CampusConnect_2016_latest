@@ -15,6 +15,7 @@ import android.provider.MediaStore;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.util.Patterns;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -120,13 +121,13 @@ public class EditProfileActivity extends AppCompatActivity implements View.OnTou
     AlertDialog.Builder  builderBatchList;
     LayoutInflater inflater;
    public ArrayAdapter<String> branchNameList;
+    CollegeNotFoundDialog getdetailsDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_registration);
         ButterKnife.bind(this);
-
         collegeNames = new ArrayList<>();
         collegeIds = new ArrayList<>();
         personName = getSharedPreferences("CC", MODE_PRIVATE).getString("profileName", "");
@@ -140,11 +141,15 @@ public class EditProfileActivity extends AppCompatActivity implements View.OnTou
         collegeName.setFocusable(false);
         profileName.setText(personName);
         profileName.setFocusable(false);
-        Picasso.with(EditProfileActivity.this)
-                .load(personPhoto)
-                .fit()
-                .memoryPolicy(MemoryPolicy.NO_CACHE, MemoryPolicy.NO_STORE)
-                .into(profilePicture);
+        if (personPhoto.isEmpty()){
+            profilePicture.setImageResource(R.mipmap.ccnoti);
+        }else {
+            Picasso.with(EditProfileActivity.this)
+                    .load(personPhoto)
+                    .fit()
+                    .memoryPolicy(MemoryPolicy.NO_CACHE, MemoryPolicy.NO_STORE)
+                    .into(profilePicture);
+        }
         Retrofit retrofit = new Retrofit.
                 Builder()
                 .baseUrl(FragmentCourses.BASE_URL)
@@ -484,7 +489,7 @@ public class EditProfileActivity extends AppCompatActivity implements View.OnTou
                                 if(pos_college_selection!=data.getCount()-1)
                                     collegeName.setText(collegeNameString);
                                 else{
-                                    CollegeNotFoundDialog getdetailsDialog = new CollegeNotFoundDialog((Activity) EditProfileActivity.this);
+                                    getdetailsDialog = new CollegeNotFoundDialog((Activity) EditProfileActivity.this);
                                     Window window = getdetailsDialog.getWindow();
                                     window.setLayout(450, ViewGroup.LayoutParams.WRAP_CONTENT);
                                     getdetailsDialog.show();
@@ -649,7 +654,77 @@ public class EditProfileActivity extends AppCompatActivity implements View.OnTou
             requestWindowFeature(Window.FEATURE_NO_TITLE);
             setContentView(R.layout.dialog_get_college_details);
             ButterKnife.bind(this);
+            submit.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    Log.d("onClick", "clicked");
+                    if (client_name.getText().toString().equals("")) {
+                        client_name.setText("Enter Name");
+                        client_name.requestFocus();
+                        return;
+                    }
+                    if (college_name.getText().toString().equals("")) {
+                        college_name.setText("Enter College Name");
+                        college_name.requestFocus();
+                        return;
+                    }
+                    if (isValidEmail(email_ID.getText().toString())) {
+                        Log.d("email id ", "valid");
+                    } else {
+                        email_ID.setText("Enter a valid Email Id");
+                        email_ID.requestFocus();
+                    }
+                    if (isValidMobile(phone_no.getText().toString())) {
+                        Log.d("phone nos", "valid");
+                    } else {
+                        phone_no.setText("Enter a valid nos");
+                        phone_no.requestFocus();
+                    }
+                    if (location.getText().toString().equals("")) {
+                        location.setText("Enter a location");
+                        phone_no.requestFocus();
+                        return;
+                    }
+
+                    MyApi.addCollegeRequest body = new MyApi.addCollegeRequest(
+                            client_name.getText().toString(),
+                            college_name.getText().toString(),
+                            email_ID.getText().toString(),
+                            phone_no.getText().toString(),
+                            location.getText().toString()
+                    );
+                    Retrofit retrofit = new Retrofit.
+                            Builder()
+                            .baseUrl(MyApi.BASE_URL)
+                            .addConverterFactory(GsonConverterFactory.create())
+                            .build();
+                    MyApi myApi = retrofit.create(MyApi.class);
+                    Call<Void> call = myApi.addCollege(body);
+                    call.enqueue(new Callback<Void>() {
+                        @Override
+                        public void onResponse(Call<Void> call, Response<Void> response) {
+                            Log.d("College details", "success");
+                            getdetailsDialog.dismiss();
+                            Toast.makeText(EditProfileActivity.this,"Your Request has been Sent",Toast.LENGTH_LONG).show();
+                        }
+
+                        @Override
+                        public void onFailure(Call<Void> call, Throwable t) {
+                            Log.d("College details", "failed");
+                        }
+                    });
+                }
+            });
         }
+
+        private boolean isValidEmail(String Email) {
+            return Patterns.EMAIL_ADDRESS.matcher(personEmail).matches();
+        }
+
+        private boolean isValidMobile(String mobileNos) {
+            return Patterns.PHONE.matcher(mobileNos).matches();
+        }
+
     }
     @Override
     protected void onResume() {
