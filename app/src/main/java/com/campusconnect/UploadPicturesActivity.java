@@ -552,7 +552,7 @@ class ImageAdapter extends BaseAdapter {
     private Context mContext;
     private LayoutInflater mInflater;
     View uploadDefaultActionView;
-    RelativeLayout layout_default_upload;
+    LinearLayout layout_default_upload;
     Bitmap bm_default_upload;
     ImageView iv_default_upload;
     Drawable drawable;
@@ -605,7 +605,8 @@ class ImageAdapter extends BaseAdapter {
             uploadDefaultActionView.setMinimumWidth((int)(UploadPicturesActivity.width/2));
             uploadDefaultActionView.setMinimumHeight((int)(UploadPicturesActivity.height/2));
 
-            layout_default_upload = (RelativeLayout) uploadDefaultActionView.findViewById(R.id.container_default_upload);
+
+            layout_default_upload = (LinearLayout) uploadDefaultActionView.findViewById(R.id.container_default_upload);
 
             layout_default_upload.setDrawingCacheEnabled(true);
 
